@@ -1,0 +1,8 @@
+{
+  "robot_ip": "<robot-ip>",
+  "ssh_user": "ubuntu",
+  "ssh_password": "",
+  "ros_domain_id": "42",
+  "preferred_mode": "ssh",
+  "robot_model": "mini_pupper"
+}

@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+
+# Local runtime state
+.minipupper_session_meta.json
+.minipupper_session_pid
+minipupper_session.log
+_tmp_*
+
+# Secrets and local environment
+.env
+.env.*
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
