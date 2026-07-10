@@ -20,3 +20,20 @@ id_ed25519*
 Thumbs.db
 .vscode/
 .idea/
+
+# Large local downloads and packaged snapshots
+local/downloads/
+local/archives/
+
+# Generated ROS workspace output and diagnostics
+workspaces/**/build/
+workspaces/**/install/
+workspaces/**/log/
+workspaces/**/*.log
+workspaces/**/*.tar.gz
+
+# Generated experiment output and nested source checkouts
+experiments/**/build/
+experiments/**/install/
+experiments/**/log/
+experiments/gazebo-ros2-setup/workspace/src/mini_pupper_ros/

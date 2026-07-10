@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # ROS2 Humble Desktop with Gazebo (non-GUI/background tasks; optional)
+  ros2-gazebo:
+    image: osrf/ros:humble-desktop-full
+    container_name: ros2_gazebo_container
+    platform: linux/arm64  # Ensure arm64 for M-series Mac
+    environment:
+      - ROS_DOMAIN_ID=42
+      - GAZEBO_MODEL_PATH=/opt/ros/humble/share/gazebo_ros/models:/workspace/models
+      - GAZEBO_PLUGIN_PATH=/opt/ros/humble/lib
+      - ROBOT_MODEL=mini_pupper_2  # Change to 'mini_pupper' if needed
+    volumes:
+      - ./dev_ws:/workspace
+      - ./models:/workspace/models
+      - workspace_data:/workspace/install  # Persistent build artifacts
+    working_dir: /workspace
+    command: bash  # Persistent shell; run commands manually inside
+    networks:
+      - ros_network
+    stdin_open: true
+    tty: true
+
+  # VNC Server for GUI applications (main container for simulations)
+  gazebo_vnc:
+    image: tiryoh/ros2-desktop-vnc:humble-arm64
+    container_name: ros2_gazebo_vnc
+    platform: linux/arm64
+    shm_size: 512m  # Gazebo needs this for shared memory
+    ports:
+      - "6080:80"   # NoVNC (browser access: http://localhost:6080/vnc.html)
+      - "5901:5901" # Raw VNC (e.g., Screen Sharing: vnc://localhost:5901)
+    volumes:
+      - ./dev_ws:/root/dev_ws  # ROS workspace
+      - ./models:/root/dev_ws/models  # Gazebo models
+      - workspace_data:/root/dev_ws/install  # Persistent build artifacts
+    environment:
+      - ROS_DOMAIN_ID=42
+      - TZ=America/Los_Angeles
+      - ROBOT_MODEL=mini_pupper_2  # Change to 'mini_pupper' if needed
+      - RESOLUTION=1920x1080  # Adjust for your screen
+    restart: unless-stopped
+    networks:
+      - ros_network
+
+networks:
+  ros_network:
+    driver: bridge
+
+volumes:
+  workspace_data:

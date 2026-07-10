@@ -1,0 +1,16 @@
+services:
+  ros2_desktop:
+    image: tiryoh/ros2-desktop-vnc:humble-arm64
+    container_name: ros2_gazebo
+    shm_size: 512m           # Gazebo needs a decent /dev/shm
+    ports:
+      - "6080:80"            # noVNC → http://localhost:6080
+      - "5901:5901"          # (optional) raw VNC if you prefer a client
+    volumes:
+      - ./dev_ws:/root/dev_ws   # your ROS 2 workspace on the host
+    environment:
+      - ROS_DOMAIN_ID=0
+      - DISPLAY=:1            # internal—handled by the LXDE desktop
+      - TZ=America/Los_Angeles
+    restart: unless-stopped
+    platform: linux/arm64     # ensures the right arch is selected

@@ -1,0 +1,3 @@
+[submodule "sources/mini_pupper_ros"]
+	path = sources/mini_pupper_ros
+	url = https://github.com/mangdangroboticsclub/mini_pupper_ros.git
