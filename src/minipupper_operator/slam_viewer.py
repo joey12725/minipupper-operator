@@ -1,35 +1,30 @@
-#!/usr/bin/env python3
+"""Tk desktop app: W/A/S/D teleop plus a live view of the robot's SLAM map.
+
+Drive the robot from the keyboard while Cartographer builds the map; the
+occupancy grid is pulled from `/map` about once a second and drawn beside the
+controls. Requires `bringup_robot` (or the Bringup button) first.
+"""
+
 from __future__ import annotations
 
+import argparse
 import json
 import queue
 import threading
 import time
 import tkinter as tk
-from dataclasses import dataclass
-from pathlib import Path
 
-from PIL import Image, ImageTk, ImageDraw
+from PIL import Image, ImageTk
 
-import minipupper_test_cli as mp
-
+from . import cli as mp
+from . import messages as msg
+from .map_render import CANVAS_SIZE, MapSnapshot, snapshot_to_image
 
 MAP_POLL_SEC = 1.0
 TELEOP_PUBLISH_SEC = 0.18
 TELEOP_LOOP_SEC = 0.12
 LINEAR_SPEED = 0.10
 ANGULAR_SPEED = 0.90
-CANVAS_SIZE = 640
-
-
-@dataclass
-class MapSnapshot:
-    width: int
-    height: int
-    resolution: float
-    origin_x: float
-    origin_y: float
-    data: list[int]
 
 
 def remote_ros_python(runtime: mp.RuntimeConfig, python_source: str, context: str, timeout: int = 30) -> str:
@@ -86,27 +81,6 @@ print(json.dumps(payload))
     )
 
 
-def snapshot_to_image(snapshot: MapSnapshot) -> Image.Image:
-    image = Image.new("RGB", (snapshot.width, snapshot.height), "white")
-    pixels = image.load()
-    for y in range(snapshot.height):
-        for x in range(snapshot.width):
-            value = snapshot.data[y * snapshot.width + x]
-            if value < 0:
-                color = (185, 185, 185)
-            elif value >= 65:
-                color = (25, 25, 25)
-            else:
-                color = (245, 245, 245)
-            pixels[x, snapshot.height - 1 - y] = color
-    image = image.resize((CANVAS_SIZE, CANVAS_SIZE), Image.Resampling.NEAREST)
-    draw = ImageDraw.Draw(image)
-    draw.rectangle((8, 8, 220, 52), fill=(255, 255, 255))
-    draw.text((14, 14), f"{snapshot.width}x{snapshot.height}", fill=(0, 0, 0))
-    draw.text((14, 30), f"{snapshot.resolution:.3f} m/cell", fill=(0, 0, 0))
-    return image
-
-
 class OperatorApp:
     def __init__(self, runtime: mp.RuntimeConfig) -> None:
         self.runtime = runtime
@@ -158,7 +132,7 @@ class OperatorApp:
         info = tk.Frame(body, padx=16)
         info.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        tk.Label(info, text="Keyboard Teleop", font=("Segoe UI", 13, "bold")).pack(anchor="w")
+        tk.Label(info, text="Keyboard Teleop", font=("TkDefaultFont", 13, "bold")).pack(anchor="w")
         tk.Label(info, text="W/S: forward/back").pack(anchor="w", pady=(12, 0))
         tk.Label(info, text="A/D: rotate left/right").pack(anchor="w")
         tk.Label(info, text="Space: immediate stop").pack(anchor="w")
@@ -168,11 +142,7 @@ class OperatorApp:
         self.topic_text.pack(fill=tk.BOTH, expand=True, pady=(20, 0))
         self.topic_text.insert(
             "1.0",
-            "Run order:\n"
-            "1. Bringup\n"
-            "2. Start SLAM\n"
-            "3. Drive with W/A/S/D\n\n"
-            "The map view refreshes from /map about once per second.\n",
+            "Run order:\n1. Bringup\n2. Start SLAM\n3. Drive with W/A/S/D\n\nThe map view refreshes from /map about once per second.\n",
         )
         self.topic_text.configure(state=tk.DISABLED)
 
@@ -210,6 +180,7 @@ class OperatorApp:
                 self._set_status(f"{label} failed: {exc}")
             else:
                 self._set_status(f"{label} complete")
+
         threading.Thread(target=runner, daemon=True).start()
 
     def _bringup(self) -> None:
@@ -238,17 +209,7 @@ class OperatorApp:
         self.keys_down.discard(key)
 
     def _desired_twist(self) -> tuple[float, float]:
-        linear = 0.0
-        angular = 0.0
-        if "w" in self.keys_down:
-            linear += LINEAR_SPEED
-        if "s" in self.keys_down:
-            linear -= LINEAR_SPEED
-        if "a" in self.keys_down:
-            angular += ANGULAR_SPEED
-        if "d" in self.keys_down:
-            angular -= ANGULAR_SPEED
-        return linear, angular
+        return msg.teleop_twist(self.keys_down, LINEAR_SPEED, ANGULAR_SPEED)
 
     def _teleop_loop(self) -> None:
         while not self.stop_event.is_set():
@@ -283,15 +244,15 @@ class OperatorApp:
 
 
 def main() -> int:
-    parser = mp.argparse.ArgumentParser(description="Local Mini Pupper teleop + SLAM map viewer.")
-    parser.add_argument("--robot-ip", help="Robot IP override.")
-    parser.add_argument("--ssh-user", help="SSH user override.")
-    parser.add_argument("--ros-domain-id", help="ROS domain override.")
-    parser.add_argument("--mode", choices=["auto", "dds", "ssh"], help="Unused here; accepted for config compatibility.")
+    parser = argparse.ArgumentParser(prog="minipupper-slam", description="Mini Pupper keyboard teleop + live SLAM map viewer.")
+    mp.add_connection_args(parser)
     args = parser.parse_args()
 
-    runtime = mp.resolve_runtime_config(args)
-    runtime = mp.maybe_prompt_for_password(runtime)
+    try:
+        runtime = mp.maybe_prompt_for_password(mp.resolve_runtime_config(args))
+    except mp.CliError as exc:
+        print(f"ERROR: {exc}")
+        return 2
 
     app = OperatorApp(runtime)
     app.run()

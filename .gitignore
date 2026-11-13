@@ -1,11 +1,19 @@
 __pycache__/
 *.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
 
-# Local runtime state
-.minipupper_session_meta.json
-.minipupper_session_pid
-minipupper_session.log
-_tmp_*
+# Local robot config and session state
+robot_config.json
+.minipupper/
+
+# Docs-search index and source material (bring your own)
+*.duckdb
+*.duckdb.wal
 
 # Secrets and local environment
 .env
@@ -21,19 +29,11 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Large local downloads and packaged snapshots
-local/downloads/
-local/archives/
+# Generated ROS workspace output
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
 
-# Generated ROS workspace output and diagnostics
-workspaces/**/build/
-workspaces/**/install/
-workspaces/**/log/
-workspaces/**/*.log
-workspaces/**/*.tar.gz
-
-# Generated experiment output and nested source checkouts
-experiments/**/build/
-experiments/**/install/
-experiments/**/log/
-experiments/gazebo-ros2-setup/workspace/src/mini_pupper_ros/
+# Experiment workspaces (populated by the setup scripts)
+experiments/**/dev_ws/
+experiments/**/models/

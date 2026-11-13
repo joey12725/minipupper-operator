@@ -1,19 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Start the containers and launch the Mini Pupper Gazebo world.
+# Run from experiments/gazebo-ros2-setup/ after scripts/setup.sh and a colcon build.
+set -euo pipefail
 
-# Build and start all services
-docker-compose up --build -d
+docker compose up -d
 
-echo "Services starting..."
-echo "Gazebo Web UI will be available at: http://localhost:8081"
-echo "noVNC Web Interface available at: http://localhost:6080"
-echo "VNC direct connection: localhost:5900"
+echo "noVNC desktop: http://localhost:6080/vnc.html"
+echo "Raw VNC:       vnc://localhost:5901"
 
-# Wait for services to be ready
 sleep 10
 
-# Launch Mini Pupper simulation
-docker-compose exec ros2-gazebo bash -c "
+docker compose exec ros2-gazebo bash -c "
   source /opt/ros/humble/setup.bash &&
   source /workspace/install/setup.bash &&
-  ros2 launch mini_pupper_gazebo mini_pupper_world.launch.py
+  ros2 launch mini_pupper_simulation gazebo.launch.py
 "

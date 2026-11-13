@@ -1,6 +1,10 @@
-# Mini Pupper Session Notes
+# Field notes: bringing up a Mini Pupper 1 on ROS 2
 
-Date: 2026-03-06
+Debug log from the March 2026 sessions that produced this repo. It is kept
+close to how it was written at the time, because the findings are the
+reason the operator tools work the way they do.
+
+Dates: 2026-03-06 to 2026-03-07
 
 ## Goal
 
@@ -13,7 +17,6 @@ Get the Mini Pupper working from this desktop for:
 ## Environment
 
 - Desktop: Windows, PowerShell, WSL available but no ROS 2 installed in WSL
-- Robot IP used in session: `<robot-ip>`
 - Robot login: `ubuntu` / stock image default password
 - Robot OS: Ubuntu 22.04
 - Robot ROS workspace: `~/ros2_ws`
@@ -46,7 +49,7 @@ The ROS 2 workspace exists and can be sourced from:
 
 A desktop-managed worker process was implemented in:
 
-- [minipupper_test_cli.py](minipupper_test_cli.py)
+- [`minipupper_operator/cli.py`](../src/minipupper_operator/cli.py)
 
 That worker keeps two SSH sessions open to the robot:
 
@@ -191,13 +194,13 @@ Conclusion:
 
 - likely mechanical or servo issue, not just software
 
-The user repaired that leg during the session.
+The leg was repaired during the session.
 
 ### 2. Power supply issue
 
 The robot repeatedly shut down or rebooted when run from an external bench supply setup.
 
-Important detail from the user:
+Important detail:
 
 - OEM battery works
 - external variable supply with alligator clips causes shutdowns under motion
@@ -220,27 +223,13 @@ Journal logs repeatedly showed:
 
 These were visible around boot and external-power use, though they were not the only cause of the robot behavior.
 
-## Files Created / Updated Locally
+## Tooling built during the session
 
-### Added
+The desktop CLI (now `minipupper-op`) grew these commands as each finding
+landed: `bringup_robot`, `read_state`, `move_robot`, `set_posture`,
+`set_joint_pose`, `stop_robot`, `show_config`.
 
-- [minipupper_test_cli.py](minipupper_test_cli.py)
-- [robot_test_config.json](robot_test_config.json)
-- [README-minipupper-test-control.md](README-minipupper-test-control.md)
-
-### Purpose
-
-`minipupper_test_cli.py` currently supports:
-
-- `bringup_robot`
-- `read_state`
-- `move_robot`
-- `set_posture`
-- `set_joint_pose`
-- `stop_robot`
-- `show_config`
-
-The most important practical command path is:
+The most useful command path was:
 
 1. `bringup_robot`
 2. `read_state`
@@ -344,9 +333,9 @@ Verified topics:
 
 This path was wrapped into the desktop helper as:
 
-- `python .\minipupper_test_cli.py start_slam`
-- `python .\minipupper_test_cli.py slam_status`
-- `python .\minipupper_test_cli.py stop_slam`
+- `minipupper-op start_slam`
+- `minipupper-op slam_status`
+- `minipupper-op stop_slam`
 
 ### 3. ROS apt repository on the robot is stale
 
@@ -372,7 +361,7 @@ Using ROS path:
 - `JointTrajectory` presets can be published
 - `stand` preset was sent successfully over ROS
 
-## What Is Still Not Fully Solved
+## Open threads at the end of the session
 
 ### 1. ROS-native locomotion tuning
 

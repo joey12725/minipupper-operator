@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ROS2 Humble Desktop with Gazebo (non-GUI/background tasks; optional)
   ros2-gazebo:

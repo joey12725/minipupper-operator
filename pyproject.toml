@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "minipupper-operator"
+version = "0.2.0"
+description = "Desktop operator CLI, teleop + live SLAM viewer, and docs search for the Mini Pupper quadruped on ROS 2 Humble."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Joey Hersh" }]
+requires-python = ">=3.10"
+dependencies = ["paramiko>=3.0"]
+keywords = ["robotics", "ros2", "quadruped", "mini-pupper", "slam", "teleop"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Robotics",
+]
+
+[project.optional-dependencies]
+viewer = ["pillow>=10"]
+docs = ["duckdb>=1.0", "httpx>=0.27"]
+dev = ["pytest>=8", "ruff>=0.6", "pillow>=10"]
+
+[project.scripts]
+minipupper-op = "minipupper_operator.cli:main"
+minipupper-slam = "minipupper_operator.slam_viewer:main"
+minipupper-docs = "minipupper_operator.docs_search:main"
+
+[project.urls]
+Repository = "https://github.com/joey12725/minipupper-operator"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py310"
+extend-exclude = ["sources", "ros2_ws"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
