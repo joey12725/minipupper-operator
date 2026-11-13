@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Joey Hersh
 # SPDX-License-Identifier: MIT
-"""Joint-space pose presets for a Mini Pupper 1 (degrees, LF/RF/LB/RB legs).
+"""
+Joint-space pose presets for a Mini Pupper 1 (degrees, LF/RF/LB/RB legs).
 
 Kept in sync with minipupper_operator.messages.JOINT_POSE_PRESETS_DEG.
 """

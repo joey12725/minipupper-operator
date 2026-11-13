@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Joey Hersh
 # SPDX-License-Identifier: MIT
-"""Cycle a Mini Pupper through joint-space pose presets.
+"""
+Cycle a Mini Pupper through joint-space pose presets.
 
 On the stock image, CHAMP's /body_pose did not produce usable posture changes,
 while JointTrajectory commands sent straight to the effort controller did.
